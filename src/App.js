@@ -1,27 +1,26 @@
 import React, { Component } from 'react';
 import Card from './Components/Card';
+import Scoreboard from './Components/Scoreboard';
 import Wrapper from './Components/Wrapper';
 import characters from './characters';
 import './App.css';
 
-let pickedSoFar = [];
-let score = 0;
-
 class App extends Component {
 
   state = {
-    characters
+    characters,
+    pickedSoFar: [],
+    score: 0,
+    scores: [],
+    highScore: 0
   };
 
   selectCard = id => {
-    // const characters = this.state.characters.filter(character => character.id !== id);
-    this.checkSelection(id);
     const characters = this.shuffleArray(this.state.characters);
-    this.setState({ characters });
-    pickedSoFar.push(id);
-    console.log("Score: " + score);
-    // console.log("ID of character you picked: " + id);
-    // console.log("IDs of characters picked so far: " + pickedSoFar);
+    this.setState({
+      characters
+    });
+    this.checkSelection(id)
   };
 
   shuffleArray = array => {
@@ -36,37 +35,50 @@ class App extends Component {
   };
 
   checkSelection = id => {
-    let pickedSame = false;
-    for (let i = 0; i < pickedSoFar.length; i++) {
-      if (pickedSoFar[i] === id) {
-        this.pickedSame = true;
-      } else {};
-    };
-    if (this.pickedSame === true) {
-      score = 0;
+    if (this.state.pickedSoFar.indexOf(id) === -1) {
+      this.handleIncrement();
+      this.setState({
+        pickedSoFar: this.state.pickedSoFar.concat(id)
+      });
     } else {
-      score++;
+      this.handleReset();
     }
+  };
+
+  handleIncrement = () => {
+    const newScore = this.state.score + 1
+    this.setState({
+      score: newScore
+    });
+  };
+
+  handleReset = () => {
+    const newScores = this.state.scores.concat(this.state.score)
+    this.setState({
+      score: 0,
+      pickedSoFar: [],
+      scores: newScores
+    });
+    this.highScore(newScores);
+  };
+
+  highScore = (newScores) => {
+    const sortedScores = newScores.sort(function(a, b) {
+      return b - a
+    });
+    const highScore = sortedScores[0]
+    this.setState({
+      highScore: highScore
+    });
   };
 
   render() {
     return (
         <div>
-          <div className="row">
-            <div className="col-md-4">
-              <h3>Twin Peaks Memory Game</h3>
-            </div>
-            <div className="col-md-4">
-              <h3>Click an image to begin!</h3>
-            </div>
-            <div className="col-md-4">
-              <h3>Score: {score}</h3>
-            </div>
-          </div>
-          <div className="jumbotron">
-            <h1 className="display-4">Twin Peaks Trivia Game</h1>
-            <p className="lead">Click on an image to earn points, but don't click on any more than once!</p>
-          </div>
+          <Scoreboard
+            score = {this.state.score}
+            highScore = {this.state.highScore}
+          />
           <Wrapper>
             {this.state.characters.map(character => (
               <Card
